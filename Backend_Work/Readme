@@ -1,0 +1,26 @@
+## Chai aur backend
+32:30
+
+## https://youtu.be/eWnZVUXMq8k?si=FUuSUntli4gQ0cJY
+middleware app.use se istemal karte hai
+cookie server hi read karta hai
+cookie browser mei store hota hai aur uspe ham crud operation kar sake
+## Database is always placed in another continent
+Bson data uses mongodb
+
+middleware flag next
+
+package 
+bcrypt
+jwt => bearer token
+
+## In arrow fuction this ka reference pta nhi hota dont use when your using this creating class
+
+
+For File upload system we have two express-upload, multer=> Use multer
+
+cloudinary
+21:16
+
+Time:14:14  
+https://youtu.be/HqcGLJSORaA?si=GYSesN0p7vH1hXL7
