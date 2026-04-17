@@ -13,7 +13,7 @@ const registerUser = asyncHandler(async (req, res) => {
   // create user object - create entry in db ✅
   // remove password and refresh token field from response ✅
   // check for user creation ✅
-  // return res
+  // return res ✅
 
   // note file handling nhi kar rhe hai => multer ke through karenge user.routes.js mei kiya hai
 
@@ -23,10 +23,31 @@ const registerUser = asyncHandler(async (req, res) => {
     !field || field.trim() === ""
   ))
   ) {
-    throw new ApiError(400, "All fields required")
+    throw new ApiError(400, "All fields are required")
   }
 
-  const existedUser = User.findOne({
+  // Email Checks  ---starts
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const normalizedEmail = email.toLowerCase().trim();
+
+  // prevents from dots
+  if(normalizedEmail.includes("..")){
+    throw new ApiError(400, "Invalid email format")
+  }
+
+  // prevents starting and Ending with dots
+  if (normalizedEmail.startsWith(".") || normalizedEmail.endsWith(".")){
+    throw new ApiError(400, "Invalid email format")
+  }
+
+  // regex check
+  if(!emailRegex.test(normalizedEmail)){
+    throw new ApiError(400, "Invalid email format")
+  }
+
+                                            //  ----EMAIL_CHECK_ENDS
+
+  const existedUser = await User.findOne({
     $or: [{ email },{ username }]
   })
 
@@ -48,7 +69,7 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   const avatar = await uploadOnCloudinary(avatarLocalPath);
-  const coverImageLocalPath = await uploadOnCloudinary(coverImageLocalPath)
+  const coverImage = await uploadOnCloudinary(coverImageLocalPath)
 
   if(!avatar){
     throw new ApiError(400, "Avatar file is required")
