@@ -19,7 +19,7 @@ const userSchema = new Schema(
             lowercase: true,
             trim: true
         },
-        fullname: {
+        fullName: {
             type: String,
             required: true,
             trim: true,
@@ -49,10 +49,10 @@ const userSchema = new Schema(
 )
 
 userSchema.pre("save", async function (next) {
-    if (!this.isModified("password")) return next()  // This is konow as negative checking
 
+    if (!this.isModified("password")) return   // This is konow as negative checking
     this.password = await bcrypt.hash(this.password, 10)
-    next()
+
 }) // use Classic function only // hash round
 
 // Custom method
@@ -65,7 +65,7 @@ userSchema.methods.isPasswordCorrect = async function (password) {
 userSchema.methods.generateAccessToken = function () {
    return jwt.sign(
         {  //  Given Payloads
-            _id: this._id,
+            _id: this._id,  // usually sends only id from here
             email: this.email,
             username: this.username,
             fullName: this.fullName

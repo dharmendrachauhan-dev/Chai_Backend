@@ -20,7 +20,16 @@ jwt => bearer token
 
 For File upload system we have two express-upload, multer=> Use multer
 
+
 cloudinary
 21:16
+collection
 
 
+postman => raw-json only send json data
+postman => if you are sending file then use form data bzc we have file option as well as text
+
+
+core javascript knowledge
+1) ( select )method=> dont want method
+1) ( replace )method=> replace the field

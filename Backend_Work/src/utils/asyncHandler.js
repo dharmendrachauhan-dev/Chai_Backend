@@ -6,7 +6,7 @@ export const asyncHandler = (requestHandler) => {
 
 // This function automatically catches errors from async code so your app doesn’t crash.
 
-
+// jab ham web req ko handle karte hai to asyncHandler use karte hai
 
 
 
