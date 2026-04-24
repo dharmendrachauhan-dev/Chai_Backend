@@ -50,7 +50,7 @@ const userSchema = new Schema(
 
 userSchema.pre("save", async function (next) {
 
-    if (!this.isModified("password")) return   // This is konow as negative checking
+    if (!this.isModified("password")) return   // This is known as negative checking
     this.password = await bcrypt.hash(this.password, 10)
 
 }) // use Classic function only // hash round
