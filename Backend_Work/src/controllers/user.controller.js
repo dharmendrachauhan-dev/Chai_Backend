@@ -42,6 +42,7 @@ const registerUser = asyncHandler(async (req, res) => {
   // note file handling nhi kar rhe hai => multer ke through karenge user.routes.js mei kiya hai
 
   const { fullName, email, username, password } = req.body // yha se data aa rha hai like form, json data so we use req.body
+  console.log(fullName)
 
   if ([fullName, email, username, password].some((field) => (
     !field || field.trim() === ""
@@ -276,7 +277,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 })
 
-const changeCurrentPassword = asynchandler(async (req, res) => {
+const changeCurrentPassword = asyncHandler(async (req, res) => {
   const { oldPassword, newPassword } = req.body
 
   // kaun sa user hai jo pass change kar rha find user kiase middleware se req.user yha se mil jayega user
