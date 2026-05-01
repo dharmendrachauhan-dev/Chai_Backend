@@ -26,11 +26,25 @@ const userSchema = new Schema(
             index: true,
         },
         avatar: {
-            type: String, // cloudnary url
-            required: true,
+            url: {
+                type: String,
+                required: true
+            },
+            public_id: {
+                type: String,
+                required: true
+            }
+            // type: String, // cloudnary url
+            // public_id: String,  // i am using this for deleting old avatar from cloudinary
+            // required: true,
         },
         coverImage: {
-            type: String, // cloudnary url
+            url: {
+                type: String
+            },
+            public_id: { 
+                type: String
+            }
         },
         watchHistory: [
             {
@@ -48,16 +62,18 @@ const userSchema = new Schema(
     }, { timestamps: true }
 )
 
+
+// its is mongoose middleware (Hook) runs before saving the user
 userSchema.pre("save", async function (next) {
 
-    if (!this.isModified("password")) return //( ← guard clause)  // This is known as negative checking
+    if (!this.isModified("password")) return //( ← guard clause)  // isModified is a mongoose Method for preventing rehashing
     this.password = await bcrypt.hash(this.password, 10)
 
 }) // use Classic function only // hash round
 
 // Custom method
 userSchema.methods.isPasswordCorrect = async function (password) {
-    return await bcrypt.compare(password, this.password)
+    return await bcrypt.compare(password, this.password)  // this.password=> db hashed password and password=> internally before comparing this hashed with same salt so it compare
 }
 
 // Both Are JWT Token this are also method

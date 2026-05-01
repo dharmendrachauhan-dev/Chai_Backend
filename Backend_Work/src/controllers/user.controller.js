@@ -1,7 +1,7 @@
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { ApiError } from '../utils/ApiError.js'
 import { User } from '../models/user.models.js'
-import { uploadOnCloudinary } from '../utils/cloudinary.js'
+import { deleteFromCloudinary, uploadOnCloudinary } from '../utils/cloudinary.js'
 import { ApiResponse } from '../utils/ApiResponse.js'
 import jwt from 'jsonwebtoken'
 
@@ -14,10 +14,12 @@ const generateAccessAndRefreshTokens = async (userId) => {
     // koi bhi pahale token generate kara lo farak nhi padega
 
     const accessToken = user.generateAccessToken()
+    console.log("Access Token : ", accessToken )
     const refreshToken = user.generateRefreshToken() // isko ham database mei store kar lenge
+    console.log("Refresh Token : ", refreshToken )
 
     // refresh token ko database mei kaise daale
-    user.refreshToken = refreshToken
+    user.refreshToken = refreshToken  // update in memory
     await user.save({ validateBeforeSave: false })  // db mei save to time lagega isliye await
 
     return { accessToken, refreshToken }
@@ -42,7 +44,6 @@ const registerUser = asyncHandler(async (req, res) => {
   // note file handling nhi kar rhe hai => multer ke through karenge user.routes.js mei kiya hai
 
   const { fullName, email, username, password } = req.body // yha se data aa rha hai like form, json data so we use req.body
-  console.log(fullName)
 
   if ([fullName, email, username, password].some((field) => (
     !field || field.trim() === ""
@@ -76,6 +77,8 @@ const registerUser = asyncHandler(async (req, res) => {
     $or: [{ email }, { username }]
   })
 
+  console.log("Line 78 : already exites or not",existedUser)
+
   // check if user already exists:
   if (existedUser) {
     throw new ApiError(409, "User with email or username already exists")
@@ -100,7 +103,10 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   const avatar = await uploadOnCloudinary(avatarLocalPath);
+  console.log(" Avatar Cloudinary :", avatar)
   const coverImage = await uploadOnCloudinary(coverImageLocalPath)
+  console.log(" CoverImage Cloudinary :", coverImage)
+
 
   if (!avatar) {
     throw new ApiError(400, "Avatar file is required")
@@ -108,17 +114,27 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const user = await User.create({
     fullName,
-    avatar: avatar.url,
-    coverImage: coverImage?.url || "",
+    avatar: {
+      url: avatar.url,
+      public_id: avatar.public_id
+    },
+    coverImage: {
+      url: coverImage?.url || "",
+      public_id: coverImage?.public_id || ""
+    },
     email,
     password,
     username: username.toLowerCase()
   })
 
+  console.log("Line 122 : Creating user ", user)
+
   const createdUser = await User.findById(user._id).select(
     //isme kya kya nhi chahiye removal
     "-password -refreshToken"
   )
+
+  console.log("Line No. 129 : removed password and refresh tokan " , createdUser)
 
   if (!createdUser) {
     throw new ApiError(500, "Something went wrong while registering the user")
@@ -187,7 +203,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .cookie("accessToken", accessToken, options)  // see typo if logout failed
+    .cookie("accessToken", accessToken, options)  
     .cookie("refreshToken", refreshToken, options)
     .json(
       new ApiResponse(
@@ -225,7 +241,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     .status(200)
     .clearCookie("accessToken", options)
     .clearCookie("refreshToken", options)
-    .json(new ApiResponse(200, {}, "User logged Out"))
+    .json(new ApiResponse(200, {}, "User logged Out Successfully"))
 })
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
@@ -236,8 +252,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 
   try {
-    const decodedToken = jwt.verify(
-      incomingRefreshToken,
+    const decodedToken = jwt.verify(   //✅ Checks the token's signature (was it issued by us?)
+      incomingRefreshToken,           //✅ Checks if the token is expired
       process.env.REFRESH_TOKEN_SECRET
     )
 
@@ -278,19 +294,42 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 })
 
 const changeCurrentPassword = asyncHandler(async (req, res) => {
+
+  // Todo 
+  // Extract Old passsword and  new Password from req.body
+  // If any field is empty throw err
+  // find user from db using req.user?._id (comes from verifyJWT middleware )
+  // If user not found throw error
+  // check oldPassword is correct using isPasswordCorrect method
+  // If old PAssword is wrong throw error
+  // Set user.password = newPAssword // temporary memory
+  // Save to db with validatebeforesave: false (skip field verification) pree save hook will auto hash the new password before saving
+  // Return the success Response
+
   const { oldPassword, newPassword } = req.body
+
+  console.log("oldPassword : ", oldPassword)
+  console.log("newPassword : ", newPassword)
+
+  if(!oldPassword || !newPassword){
+    throw new ApiError(400, "All fields are reaquired ")
+  }
+
+
 
   // kaun sa user hai jo pass change kar rha find user kiase middleware se req.user yha se mil jayega user
 
   const user = await User.findById(req.user?._id)
+  console.log("This User is find from database so _id is taken from db woth the help of middelware",user)
   const isPasswordCurrect = await user.isPasswordCorrect(oldPassword)
+  console.log(" Is PasswordCurrect checking Boolean : ", isPasswordCurrect)
 
   if (!isPasswordCurrect) {
     throw new ApiError(400, "Invalid Password")
   }
 
   user.password = newPassword
-  await user.save({ validateBeforeSave: false }) // hook tabhi call hoga jab save hoga
+  await user.save({ validateBeforeSave: false }) // Skill all field validation and save in db
 
   return res
     .status(200)
@@ -302,10 +341,21 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 const getCurrentUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
-    .json(200, req.user, "Current user is fetched successfully")
+    .json(new ApiResponse (
+      200,
+      req.user,
+      "User fetched Successfully"
+    ))
 })
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
+  // TODO
+  // Get the fields from req.body like fullname, email
+  // show error if not found
+  // call DB use method findByIdandUpdate provide id, use mongo db operator, new to true so this return updated on not old document and so remove password
+  // then send api response
+
+
   const { fullName, email } = req.body
   // note => file update karne ke liye new cintroller and endpoint rakho taaki usko easily update kar sako better approch
 
@@ -313,15 +363,15 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     throw new ApiError(400, "All fields are required")
   }
 
-  const user = User.findByIdAndUpdate(
-    req.user?._id,
+  const user = await User.findByIdAndUpdate(
+    req.user?._id, // This user come from middleware
     {
-      $set: {    /// look into it
-        fullName,
-        email: email
+      $set: {    /// With $set Operator — only updates fullName and email
+        fullName: fullName,  //explicit written
+        email: email // exlpicit written
       }
     },
-    { new: true }
+    { new: true } // Returns the updated document instead of the old one
   ).select("-password")
 
   return res
@@ -329,39 +379,69 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "Account details updated successfully"))
 })
 
-const updateUserAvatar = asyncHandler(async (req, res) => {
 
+const updateUserAvatar = asyncHandler(async (req, res) => {
+    // todo
+    // 1. Extract file path from req.file?.path (comes from multer middleware)
+    // 2. If file not found throw error
+    // 3. Find user from db using req.user?._id
+    // 4. Get old avatar public_id from user.avatar?.public_id
+    // 5. Upload new avatar to cloudinary using local path
+    // 6. If upload fails throw error
+    // 7. If old public_id exists delete old avatar from cloudinary
+    // 8. Update user in db with new avatar url and public_id using findByIdAndUpdate
+    //    $set: { avatar: { url: avatar.url, public_id: avatar.public_id } }
+    //    { new: true } to get updated document
+    //    .select("-password") to remove password from response
+    // 9. Return success response with updated user
   const avatarLocalPath = req.file?.path
 
   if (!avatarLocalPath) {  // checking local hai ya nhi
     throw new ApiError(400, "Avatar file is missing")
   }
 
+  const user = await User.findById(req.user?._id)
+  console.log("Ye db se user ko nikal rhe hai => ", user)
+
+  const oldPublicId = user.avatar?.public_id
+  console.log("yha oldPublicId dekhne ki koshis => " , oldPublicId)
+
+  // Upload new avatar to cloudinary
   const avatar = await uploadOnCloudinary(avatarLocalPath)
 
   if (!avatar.url) {
     throw new ApiError(400, "Error while uploading on avatar")
   }
 
+  // Delete old avatar from cloudinary
+  if(oldPublicId){
+    await deleteFromCloudinary(oldPublicId)
+  }
+
   // set=> Its a operator for update
 
-  const user = await User.findByIdAndUpdate(
+  const updatedUser = await User.findByIdAndUpdate(
     req.user?._id,
     {
       $set: {
-        avatar: avatar.url // updating the url
+        avatar: {
+           url : avatar.url, // updating the url
+           public_id: avatar.public_id
+        }
       }
     },
     { new: true }
-  ).password("-password") // password hata do
+  ).select("-password") // password hata do
 
   return res
     .status(200)
     .json(
-      new ApiResponse(200, user, "Cover image updated successfully")
-    )
+      new ApiResponse(
+        200, 
+        user, 
+        "Avatar image updated successfully"
+    ))
 })
-
 
 const updateUserCoverImage = asyncHandler(async (req, res) => {
   const coverImageLocalPath = req.file?.path
@@ -370,21 +450,34 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Cover image is missing")
   }
 
+  const user = await User.findById(req.user?._id)
+  const oldPublic_id = user.coverImage?.public_id
+
   const coverImage = await uploadOnCloudinary(coverImageLocalPath)
 
   if (!coverImage.url) {
     throw new ApiError(400, "Error while uploading on coveimage")
   }
 
-  const user = await User.findByIdAndUpdate(  // refrence leke response bhejna
+  if(oldPublic_id){
+    await deleteFromCloudinary(oldPublic_id)
+  }
+
+
+  const updatedUser = await User.findByIdAndUpdate(  // refrence leke response bhejna
     req.user?._id,
     {
       $set: {
-        coverImage: coverImage.url
+        coverImage: {
+          url: coverImage.url,
+          public_id: coverImage.public_id
+        }
       }
     },
     { new: true }
   ).select("-password")
+
+  // delete old cover image after upload new cover
 
   return res
     .status(200)

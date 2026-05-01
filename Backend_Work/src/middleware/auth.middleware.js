@@ -8,13 +8,13 @@ import { User } from "../models/user.models.js"
 export const verifyJWT = asyncHandler(async(req, _, next) =>{
     try {
         const token = req.cookies?.accessToken  //  [?] => "only look inside if cookies actually exists" (safe check, won't crash)
-         || req.header("Authorization")?.replace("Bearer ", "")
+         || req.header("Authorization")?.replace("Bearer ", "") // Mobile mei header se token nikalte hai
     
         if(!token) {
             throw new ApiError(401, "Unauthorized request")
         }
     
-        const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+        const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET) // isme se _id nikalte hai
     
         const user = await User.findById(decodedToken?._id).
         select('-password -refreshToken')
