@@ -7,7 +7,8 @@ import {
     changeCurrentPassword,
     updateAccountDetails,
     updateUserAvatar,
-    updateUserCoverImage
+    updateUserCoverImage,
+    getUserChannelProfile
 } from "../controllers/user.controller.js"
 
 // Middlewares
@@ -41,5 +42,6 @@ router.route("/change-current-password").patch(verifyJWT /*this  middleware */, 
 router.route("/update-account-details").patch(verifyJWT, updateAccountDetails)
 router.route("/update-user-avatar").patch(verifyJWT, upload.single("avatar"), updateUserAvatar)
 router.route("/update-usercover-image").patch(verifyJWT, upload.single("coverImage"), updateUserCoverImage)
+router.route("/c/:username").get(verifyJWT, getUserChannelProfile) 
 
 export default router

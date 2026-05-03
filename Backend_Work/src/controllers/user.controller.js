@@ -14,9 +14,9 @@ const generateAccessAndRefreshTokens = async (userId) => {
     // koi bhi pahale token generate kara lo farak nhi padega
 
     const accessToken = user.generateAccessToken()
-    console.log("Access Token : ", accessToken )
+    console.log("Access Token : ", accessToken)
     const refreshToken = user.generateRefreshToken() // isko ham database mei store kar lenge
-    console.log("Refresh Token : ", refreshToken )
+    console.log("Refresh Token : ", refreshToken)
 
     // refresh token ko database mei kaise daale
     user.refreshToken = refreshToken  // update in memory
@@ -77,7 +77,7 @@ const registerUser = asyncHandler(async (req, res) => {
     $or: [{ email }, { username }]
   })
 
-  console.log("Line 78 : already exites or not",existedUser)
+  console.log("Line 78 : already exites or not", existedUser)
 
   // check if user already exists:
   if (existedUser) {
@@ -134,7 +134,7 @@ const registerUser = asyncHandler(async (req, res) => {
     "-password -refreshToken"
   )
 
-  console.log("Line No. 129 : removed password and refresh tokan " , createdUser)
+  console.log("Line No. 129 : removed password and refresh tokan ", createdUser)
 
   if (!createdUser) {
     throw new ApiError(500, "Something went wrong while registering the user")
@@ -203,7 +203,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .cookie("accessToken", accessToken, options)  
+    .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
     .json(
       new ApiResponse(
@@ -311,7 +311,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
   console.log("oldPassword : ", oldPassword)
   console.log("newPassword : ", newPassword)
 
-  if(!oldPassword || !newPassword){
+  if (!oldPassword || !newPassword) {
     throw new ApiError(400, "All fields are reaquired ")
   }
 
@@ -320,7 +320,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
   // kaun sa user hai jo pass change kar rha find user kiase middleware se req.user yha se mil jayega user
 
   const user = await User.findById(req.user?._id)
-  console.log("This User is find from database so _id is taken from db woth the help of middelware",user)
+  console.log("This User is find from database so _id is taken from db woth the help of middelware", user)
   const isPasswordCurrect = await user.isPasswordCorrect(oldPassword)
   console.log(" Is PasswordCurrect checking Boolean : ", isPasswordCurrect)
 
@@ -341,7 +341,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 const getCurrentUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
-    .json(new ApiResponse (
+    .json(new ApiResponse(
       200,
       req.user,
       "User fetched Successfully"
@@ -381,19 +381,19 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
 
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
-    // todo
-    // 1. Extract file path from req.file?.path (comes from multer middleware)
-    // 2. If file not found throw error
-    // 3. Find user from db using req.user?._id
-    // 4. Get old avatar public_id from user.avatar?.public_id
-    // 5. Upload new avatar to cloudinary using local path
-    // 6. If upload fails throw error
-    // 7. If old public_id exists delete old avatar from cloudinary
-    // 8. Update user in db with new avatar url and public_id using findByIdAndUpdate
-    //    $set: { avatar: { url: avatar.url, public_id: avatar.public_id } }
-    //    { new: true } to get updated document
-    //    .select("-password") to remove password from response
-    // 9. Return success response with updated user
+  // todo
+  // 1. Extract file path from req.file?.path (comes from multer middleware)
+  // 2. If file not found throw error
+  // 3. Find user from db using req.user?._id
+  // 4. Get old avatar public_id from user.avatar?.public_id
+  // 5. Upload new avatar to cloudinary using local path
+  // 6. If upload fails throw error
+  // 7. If old public_id exists delete old avatar from cloudinary
+  // 8. Update user in db with new avatar url and public_id using findByIdAndUpdate
+  //    $set: { avatar: { url: avatar.url, public_id: avatar.public_id } }
+  //    { new: true } to get updated document
+  //    .select("-password") to remove password from response
+  // 9. Return success response with updated user
   const avatarLocalPath = req.file?.path
 
   if (!avatarLocalPath) {  // checking local hai ya nhi
@@ -404,7 +404,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   console.log("Ye db se user ko nikal rhe hai => ", user)
 
   const oldPublicId = user.avatar?.public_id
-  console.log("yha oldPublicId dekhne ki koshis => " , oldPublicId)
+  console.log("yha oldPublicId dekhne ki koshis => ", oldPublicId)
 
   // Upload new avatar to cloudinary
   const avatar = await uploadOnCloudinary(avatarLocalPath)
@@ -414,7 +414,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   }
 
   // Delete old avatar from cloudinary
-  if(oldPublicId){
+  if (oldPublicId) {
     await deleteFromCloudinary(oldPublicId)
   }
 
@@ -425,8 +425,8 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     {
       $set: {
         avatar: {
-           url : avatar.url, // updating the url
-           public_id: avatar.public_id
+          url: avatar.url, // updating the url
+          public_id: avatar.public_id
         }
       }
     },
@@ -437,10 +437,10 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     .status(200)
     .json(
       new ApiResponse(
-        200, 
-        user, 
+        200,
+        user,
         "Avatar image updated successfully"
-    ))
+      ))
 })
 
 const updateUserCoverImage = asyncHandler(async (req, res) => {
@@ -459,7 +459,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Error while uploading on coveimage")
   }
 
-  if(oldPublic_id){
+  if (oldPublic_id) {
     await deleteFromCloudinary(oldPublic_id)
   }
 
@@ -487,6 +487,85 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
 
 })
 
+
+const getUserChannelProfile = asyncHandler(async (req, res) => {
+  const { username } = req.params
+
+  if (!username?.trim()) {
+    throw new ApiError(400, "Username is missing")
+  }
+  // Writting Aggregation Pipeline
+
+  const channel = await User.aggregate([
+    {
+      $match: {
+        username: username?.toLowerCase() // explicit return
+      }
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "channel",
+        as: "subscribers"
+      }
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "subscriber",
+        as: "subscribedTo"
+      },
+    },
+    {
+      $addFields: {
+        subscribersCount: {
+          $size: "$subscribers" // if u use $ then u are saying its field
+        },
+        channelsSubscribedToCount: {
+          $size: "$subscribedTo"
+        },
+        isSubscribed: {
+          $cond: {
+            if: { $in: [req.user?._id, "$subscribers.subscriber"] }, // in ka mtlb preset hai nhi hai
+            then: true,
+            else: false
+          }
+        }
+      }
+    },
+    {
+      $project: { // It allows for reformatting documents, creating new computed fields, and restricting the fields returned to the client.
+        fullName: 1,
+        username: 1,
+        subscribersCount: 1,
+        channelsSubscribedToCount: 1,
+        isSubscribed: 1,
+        avatar: 1,
+        coverImage: 1,
+        email: 1
+      }
+    }
+  ])
+
+  if(!channel?.length){
+    throw new ApiError(400, "Channel does not exists")
+  }
+
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(
+      200,
+      channel[0],
+      "User Channel Fetched succesfully"
+    )
+  )
+})
+
+
+
 export {
   registerUser,
   loginUser,
@@ -496,5 +575,6 @@ export {
   getCurrentUser,
   updateAccountDetails,
   updateUserAvatar,
-  updateUserCoverImage
+  updateUserCoverImage,
+  getUserChannelProfile,
 }
