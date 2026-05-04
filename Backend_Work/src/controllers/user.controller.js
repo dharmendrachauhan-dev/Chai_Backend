@@ -223,9 +223,9 @@ const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
     { // update kya karna hai
-      $set: {
-        refreshToken: undefined
-      } // This operator
+      $unset: {
+        refreshToken: 1 // this remove the field from document
+      }
     },
     {
       returnDocument: 'after'
@@ -618,6 +618,8 @@ const getWatchHistory = asyncHandler (async (req, res) => {
     )
   )
 })
+
+
 
 
 export {
