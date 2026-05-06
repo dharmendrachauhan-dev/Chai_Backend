@@ -168,8 +168,42 @@ const updateTweet = asyncHandler(async (req, res) => {
 })
 
 const deleteTweet = asyncHandler(async (req, res) => {
- 
+    //TODO: delete tweet
+    //get tweet Id from params
+    //tweet Id validatation
+    //search in db 
+    //check !found
+    //authorize
+    //db ko call findidanddelete
+    //response
 
+    const { tweetId } = req.params
+
+    if(!mongoose.Types.ObjectId.isValid(tweetId)){
+        throw new ApiError(400, "Tweet not valid")
+    }
+
+    const tweet = await Tweet.findById(tweetId)
+
+    if(!tweetId){
+        throw new ApiError(400, "TweetId is missing")
+    }
+
+    if(req.user._id.toString() !== twitter.owner.toString()){
+        throw new ApiError(403, "Unauthorized")
+    }
+
+    const deleteTweet = await Tweet.findByIdAndDelete(tweetId)
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            null,
+            "Tweet is successfully deleted."
+        )
+    )
 
 })
 
