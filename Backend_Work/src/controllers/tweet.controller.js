@@ -1,6 +1,6 @@
 import mongoose, { isValidObjectId } from "mongoose"
 import { Tweet } from "../models/tweet.model.js"
-import { User } from "../models/user.model.js"
+import { User } from "../models/user.models.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
@@ -24,10 +24,12 @@ const createTweet = asyncHandler(async (req, res) => {
     if (!content || content.trim() === "") {
         throw new ApiError(400, "Write something to post.")
     }
+    console.log(content.length)
 
-    if (content.length <= 280) {
+    if (content.length >= 280) {
         throw new ApiError(400, "Tweet cannot exceeded 280 characters")
     }
+
 
     const tweet = await Tweet.create({
         content: content.trim(),
@@ -68,7 +70,7 @@ const getUserTweets = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Username is missing.")
     }
 
-    const userTweets = Tweet.aggregate[
+    const userTweets = await User.aggregate([
         {
             $match: { username: username.toLowerCase() }
         },
@@ -82,12 +84,14 @@ const getUserTweets = asyncHandler(async (req, res) => {
         },
         {
             $project: {
-                tweets: 1,
+                userTweets: 1,
                 username: 1,
                 avatar: 1
             }
         }
-    ]
+    ])
+
+    console.log((await userTweets).length)
 
     if (!userTweets || userTweets.length === 0) {
         throw new ApiError(404, "User do not exits")

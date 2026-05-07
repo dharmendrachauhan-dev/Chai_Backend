@@ -60,7 +60,7 @@ router.route("/history").get(verifyJWT, getWatchHistory)
 
 // Tweets Routes APIs
 router.route("/create-tweet").post(verifyJWT, createTweet)
-router.route("/users-tweets").get(getUserTweets)
+router.route("/t/:username").get(getUserTweets)
 router.route("/update-tweet").patch(verifyJWT, updateTweet)
 router.route("/delete-tweet").delete(verifyJWT, deleteTweet)
 
