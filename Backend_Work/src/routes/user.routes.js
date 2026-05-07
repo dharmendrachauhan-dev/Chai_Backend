@@ -13,9 +13,18 @@ import {
     getWatchHistory
 } from "../controllers/user.controller.js"
 
+// Tweets
+import {
+    createTweet,
+    deleteTweet,
+    getUserTweets,
+    updateTweet
+} from "../controllers/tweet.controller.js"
+
 // Middlewares
 import { upload } from '../middleware/multer.middleware.js'
 import { verifyJWT } from "../middleware/auth.middleware.js"
+
 
 const router = Router()
 
@@ -40,12 +49,19 @@ router.route("/login").post(loginUser)
 // Secured Routes
 router.route("/logout").post(verifyJWT /*this  middleware */, logoutUser)
 router.route("/refresh-token").post(refreshAccessToken)
-router.route("/change-current-password").patch(verifyJWT /*this  middleware */, changeCurrentPassword)
+router.route("/change-password").patch(verifyJWT /*this  middleware */, changeCurrentPassword)
 router.route("/current-user").get(verifyJWT, getCurrentUser)
-router.route("/update-account-details").patch(verifyJWT, updateAccountDetails)
+router.route("/update-details").patch(verifyJWT, updateAccountDetails)
 router.route("/avatar").patch(verifyJWT, upload.single("avatar"), updateUserAvatar)
 router.route("/cover-image").patch(verifyJWT, upload.single("coverImage"), updateUserCoverImage)
 router.route("/c/:username").get(verifyJWT, getUserChannelProfile)
 router.route("/history").get(verifyJWT, getWatchHistory)
+
+
+// Tweets Routes APIs
+router.route("/create-tweet").post(verifyJWT, createTweet)
+router.route("/users-tweets").get(getUserTweets)
+router.route("/update-tweet").patch(verifyJWT, updateTweet)
+router.route("/delete-tweet").delete(verifyJWT, deleteTweet)
 
 export default router

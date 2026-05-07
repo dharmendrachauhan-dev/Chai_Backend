@@ -19,7 +19,7 @@ const createTweet = asyncHandler(async (req, res) => {
     // tweet create yaani save to db
     // res bhej do 201
     const { content } = req.body
-    const userId = req.user._id
+    const userId = req.user._id  // this come from middleware
 
     if (!content || content.trim() === "") {
         throw new ApiError(400, "Write something to post.")
@@ -185,15 +185,15 @@ const deleteTweet = asyncHandler(async (req, res) => {
 
     const tweet = await Tweet.findById(tweetId)
 
-    if(!tweetId){
-        throw new ApiError(400, "TweetId is missing")
+    if(!tweet){
+        throw new ApiError(400, "Tweet not found")
     }
 
-    if(req.user._id.toString() !== twitter.owner.toString()){
+    if(req.user._id.toString() !== tweet.owner.toString()){
         throw new ApiError(403, "Unauthorized")
     }
 
-    const deleteTweet = await Tweet.findByIdAndDelete(tweetId)
+    const deletedTweet = await Tweet.findByIdAndDelete(tweetId)
 
     return res
     .status(200)
