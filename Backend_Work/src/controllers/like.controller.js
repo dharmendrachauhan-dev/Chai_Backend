@@ -19,7 +19,7 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
     }
 
     const video = await Video.findById(videoId)
-    if(!video){
+    if (!video) {
         throw new ApiError(400, "Video not found")
     }
 
@@ -31,15 +31,15 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
     if (existingLike) {
         await Like.findByIdAndDelete(existingLiked._id)
         return res
-        .status(200)
-        .json(200,
-            new ApiResponse 
-            (
-                200,
-                null,
-                "Video unliked"
+            .status(200)
+            .json(200,
+                new ApiResponse
+                    (
+                        200,
+                        null,
+                        "Video unliked"
+                    )
             )
-        )
     }
 
     if (!existingLike) {
@@ -48,15 +48,15 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
             likeBy: req.user._id
         })
         return res
-        .status(200)
-        .ApiResponse (
-            200,
-            new ApiResponse(
+            .status(200)
+            .ApiResponse(
                 200,
-                null,
-                "Video Liked"
+                new ApiResponse(
+                    200,
+                    null,
+                    "Video Liked"
+                )
             )
-        )
     }
 })
 
@@ -69,51 +69,51 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
     // if existing comment like hai to unlike kardo res bhej do
     // nhi to agar unlike hai to like kara do create kar do and response
 
-    if(!mongoose.Types.ObjectId.isValid(commentId)){
+    if (!mongoose.Types.ObjectId.isValid(commentId)) {
         throw new ApiError(400, "CommentId not found")
     }
 
     const comment = await Comment.findById(commentId)
 
-    if(!comment){
+    if (!comment) {
         throw new ApiError(400, "Comment not found")
     }
 
-    const isExistingLike = await Like.findOne({
+    const existingLike = await Like.findOne({
         comment: commentId,
         likedBy: req.user._id
     })
 
-    if(!isExistingLike){
-        await Like.create(isExistingLike._id)
-        return res 
-        .status(200)
-        .json(
-            new ApiResponse(
-                200,
-                null,
-                "Comment liked"
+
+    if (existingLike) {
+        await Like.findByIdAndDelete(isExistingLike._id)
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    null,
+                    "Comment liked Removed"
+                )
             )
-        )
     }
 
-    if(isExistingLike){
-        await Like.findByIdAndDelete({
+    if (!existingLike) {
+        await Like.create({
             comment: commentId,
             likedBy: req.user._id
         })
         return res
-        .status(200)
-        .json(
-            new ApiResponse(
-                200,
-                null,
-                "Comment liked Removed"
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    null,
+                    "Comment liked"
+                )
             )
-        )
     }
 
-    
 })
 
 const toggleTweetLike = asyncHandler(async (req, res) => {
