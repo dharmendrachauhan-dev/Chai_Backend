@@ -23,7 +23,7 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Video not found")
     }
 
-    const existingLike = await Like.findOne({
+    const existingLiked = await Like.findOne({
         video: videoId,
         likedBy: req.user._id
     })
@@ -63,6 +63,57 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
 const toggleCommentLike = asyncHandler(async (req, res) => {
     const { commentId } = req.params
     // Todo
+    // pahale mongodb mei _id params ko check karo
+    // phir comment model find karo => Mil gya
+    // check existing commnet or not
+    // if existing comment like hai to unlike kardo res bhej do
+    // nhi to agar unlike hai to like kara do create kar do and response
+
+    if(!mongoose.Types.ObjectId.isValid(commentId)){
+        throw new ApiError(400, "CommentId not found")
+    }
+
+    const comment = await Comment.findById(commentId)
+
+    if(!comment){
+        throw new ApiError(400, "Comment not found")
+    }
+
+    const isExistingLike = await Like.findOne({
+        comment: commentId,
+        likedBy: req.user._id
+    })
+
+    if(!isExistingLike){
+        await Like.create(isExistingLike._id)
+        return res 
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                null,
+                "Comment liked"
+            )
+        )
+    }
+
+    if(isExistingLike){
+        await Like.findByIdAndDelete({
+            comment: commentId,
+            likedBy: req.user._id
+        })
+        return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                null,
+                "Comment liked Removed"
+            )
+        )
+    }
+
+    
 })
 
 const toggleTweetLike = asyncHandler(async (req, res) => {
