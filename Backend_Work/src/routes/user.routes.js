@@ -64,4 +64,9 @@ router.route("/t/:username").get(getUserTweets)  // recheck
 router.route("/update-tweet/:tweetId").patch(verifyJWT, updateTweet)
 router.route("/delete-tweet/:tweetId").delete(verifyJWT, deleteTweet)
 
+
+// Like Routes APIs
+
+
+
 export default router
