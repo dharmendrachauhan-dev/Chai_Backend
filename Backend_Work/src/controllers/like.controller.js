@@ -86,7 +86,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
 
 
     if (existingLike) {
-        await Like.findByIdAndDelete(isExistingLike._id)
+        await Like.findByIdAndDelete(existingLike._id)
         return res
             .status(200)
             .json(
@@ -118,10 +118,68 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
 
 const toggleTweetLike = asyncHandler(async (req, res) => {
     const { tweetId } = req.params
+    // TODO
+    // check tweet id from mongoose validation
+    // find tweet id in tweet model reference if the this id is in the collection
+    // agar exit nahi karta to err
+    // find in like model
+    // if exit exit like laga
+    // agar nhi to like hta do
+
+
+    if(!mongoose.Types.ObjectId.isValid(tweetId)){
+        throw new ApiError(400, "TweetId not found")
+    }
+
+    const tweet = await Tweet.findById(tweetId)
+    if(!tweet){
+        throw new ApiError(400, "Tweet not found")
+    }
+
+    const existingLike = await Like.findOne({
+        tweet: tweetId,
+        likedBy: req.user._id
+    })
+
+
+
+    if(existingLike){
+        await Like.findByIdAndDelete(existingLike._id)
+        return res
+        .status(200)
+        .json(
+            new ApiResponse (
+                200,
+                null,
+                "Tweet liked removed"
+            )
+        )
+    }
+
+    if (!existingLike){
+        await Like.create({
+            tweet: tweetId,
+            likeedBy: req.user._id
+        })
+        return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                new ApiResponse(
+                    200,
+                    null,
+                    "Tweet liked"
+                )
+            )
+        )
+    }
+
+
 })
 
 const getLikedVideos = asyncHandler(async (req, res) => {
     //TODO: get all liked videos
+
 })
 
 
