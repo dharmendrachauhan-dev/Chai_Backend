@@ -55,7 +55,56 @@ const addComment = asyncHandler(async(req, res) => {
 })
 
 const updateComment = asyncHandler( async (req, res) => {
-    
+    //TODO
+    // step-1 take commentId=> req.param and content=> req.body ✅
+    // step-2 to commentid ko validate ✅
+    // step3 check content mei hai ya nhi agar nhi to err de de ✅
+    // step-4 commentId se pure Comment collection mei check kar liya ye comment ka id kisme hai(variable me rakho) ✅
+    // step-5 check karo comment mei kuch hai ki nahi ✅
+    // step-6 comment mei id hai tweet daala owner already hai middleware se user ko match kar sakta hu (AUTHORIZE) 
+    // step-7 find by id and update 
+    // step-8 send res
+
+    const { commentId } = req.params
+    const { content } = req.body
+
+    if(!mongoose.Types.ObjectId.isValid(commentId)){
+        throw new ApiError(400, "CommentId not valid")
+    }
+
+    if(!content || content.trim() === ""){
+        throw new ApiError(400, "Comment not Found")
+    }
+
+    const comment = await Comment.findById(commentId)
+
+    if(!comment){
+        throw new ApiError(400, "Comment not found")
+    }
+
+    if(comment.owner.toString() !== req.user._id.toString()){
+        throw new ApiError(403, "Unauthorised action")
+    }
+
+    const updateComment = await Comment.findByIdAndUpdate(
+        {_id: commentId},
+        {
+            $set: {
+                content
+            }
+        },
+        { new : true}
+    )
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            updateComment,
+            "Comment successfully updated"
+        )
+    )
 })
 
 const deleteComment = asyncHandler( async (req, res) => {
