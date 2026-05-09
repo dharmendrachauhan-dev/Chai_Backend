@@ -184,19 +184,19 @@ const getLikedVideos = asyncHandler(async (req, res) => {
     const likedVideos = await Like.aggregate([
         {
             $match: {
-                likedBy: new mongoose.Types.ObjectId(req.user._id),
+                likedBy: new mongoose.Types.ObjectId(req.user._id),  // req.user._id = "user-1"(string) convert this into objectId for match
                 video: { $exits: true, $ne: null }
-                //$exits only checks the fields
-                //ne if video object nhi null hai then its fail
+                // $exits only checks the fields
+                // ne if video object nhi null hai then its fail
             }
         },
         // step-2 Get full Video details
         {
             $lookup: {
-                from: "videos",
-                localField: "video",
-                foreignField: "_id",
-                as: "video",
+                from: "videos", // where to look(collection)
+                localField: "video", // value to have (like doc)
+                foreignField: "_id", // value to match with (videos collection)
+                as: "video", // where to put result (this video doc going to attach like document)
                 // Step 3 - get video owner details
                 pipeline: [
                     {
@@ -223,7 +223,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
                         }
                     }
                 ]
-            }
+            }     
         },
         {
             $addFields: {
@@ -254,3 +254,26 @@ const getLikedVideos = asyncHandler(async (req, res) => {
 })
 
 
+
+export{
+    toggleVideoLike,
+    toggleCommentLike,
+    toggleTweetLike,
+    getLikedVideos
+}
+
+
+// NOTE: pipeline always create in lookups
+/* 
+$lookup: {
+    from: "users",
+    localField: "owner",
+    foreignField: "_id",
+    as: "owner",
+    pipeline: [          // ← this door allows you to
+        { $project },    //   do extra operations
+        { $match },      //   on the fetched data
+        { $addFields }   //   before returning it
+    ]
+}
+*/
