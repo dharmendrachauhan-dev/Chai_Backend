@@ -109,6 +109,40 @@ const updateComment = asyncHandler( async (req, res) => {
 
 const deleteComment = asyncHandler( async (req, res) => {
     // delete comment
+    // get content and commentId
+    // check both
+    // find commentId in Comment Collection yha se aayega owner
+    // Check if 
+    // Authorize req.user._id !== comment.owner (don string mei karo)
+    // then FindbyidAndDelete 
+    // response
+
+    const { commentId } = req.params
+
+    if(!mongoose.Types.ObjectId.isValid(commentId)){
+        throw new ApiError(400, "Invalid ID")
+    }
+
+    const comment = await Comment.findById(commentId)
+    if(!comment){
+        throw new ApiError(400, "Comment not found")
+    }
+
+    if(comment.owner.toString() !== req.user._id.toString()){
+        throw new ApiError(403, "Unauthorized Action")
+    }
+
+    await Comment.findByIdAndDelete(commentId) // ✅ simpler than findOneAndDelete
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            null,
+            "Comment succefully deleted."
+        )
+    )
 } )
 
 const getVideoComment = asyncHandler ( async (req, res) => {
