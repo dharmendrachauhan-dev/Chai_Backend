@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
 import { Video } from '../models/video.model.js'
+import { Like } from "../models/like.model.js";
 
 
 const toggleVideoLike = asyncHandler(async (req, res) => {
@@ -127,12 +128,12 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
     // agar nhi to like hta do
 
 
-    if(!mongoose.Types.ObjectId.isValid(tweetId)){
+    if (!mongoose.Types.ObjectId.isValid(tweetId)) {
         throw new ApiError(400, "TweetId not found")
     }
 
     const tweet = await Tweet.findById(tweetId)
-    if(!tweet){
+    if (!tweet) {
         throw new ApiError(400, "Tweet not found")
     }
 
@@ -143,35 +144,35 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
 
 
 
-    if(existingLike){
+    if (existingLike) {
         await Like.findByIdAndDelete(existingLike._id)
         return res
-        .status(200)
-        .json(
-            new ApiResponse (
-                200,
-                null,
-                "Tweet liked removed"
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    null,
+                    "Tweet liked removed"
+                )
             )
-        )
     }
 
-    if (!existingLike){
+    if (!existingLike) {
         await Like.create({
             tweet: tweetId,
             likeedBy: req.user._id
         })
         return res
-        .status(200)
-        .json(
-            new ApiResponse(
+            .status(200)
+            .json(
                 new ApiResponse(
-                    200,
-                    null,
-                    "Tweet liked"
+                    new ApiResponse(
+                        200,
+                        null,
+                        "Tweet liked"
+                    )
                 )
             )
-        )
     }
 
 
@@ -180,6 +181,76 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
 const getLikedVideos = asyncHandler(async (req, res) => {
     //TODO: get all liked videos
 
+    const likedVideos = await Like.aggregate([
+        {
+            $match: {
+                likedBy: new mongoose.Types.ObjectId(req.user._id),
+                video: { $exits: true, $ne: null }
+                //$exits only checks the fields
+                //ne if video object nhi null hai then its fail
+            }
+        },
+        // step-2 Get full Video details
+        {
+            $lookup: {
+                from: "videos",
+                localField: "video",
+                foreignField: "_id",
+                as: "video",
+                // Step 3 - get video owner details
+                pipeline: [
+                    {
+                        $lookup: {
+                            from: "users",
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "owner",
+                            pipeline: [
+                                {
+                                    $project: {
+                                        fullName: 1,
+                                        avatar: 1,
+                                        username: 1
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    // owner array to object
+                    {
+                        $addFields: {
+                            owner: { $first: "$owner" }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            $addFields: {
+                video: { $first: "$video" }
+            }
+        },
+        {
+            $project: {
+                video: 1,
+                likedBy: 1
+            }
+        }
+    ])
+
+    if(!likedVideos || likedVideos.length === 0){
+        throw new ApiError(400, "No liked videos found")
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            likedVideos,
+            "Liked video Fetched succesfully"
+        )
+    )
 })
 
 
