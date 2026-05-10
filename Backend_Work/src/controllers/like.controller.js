@@ -225,6 +225,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
                 ]
             }     
         },
+        // video array to object
         {
             $addFields: {
                 video: { $first: "$video" }

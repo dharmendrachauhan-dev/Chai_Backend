@@ -13,14 +13,6 @@ import {
     getWatchHistory
 } from "../controllers/user.controller.js"
 
-// Tweets
-import {
-    createTweet,
-    deleteTweet,
-    getUserTweets,
-    updateTweet
-} from "../controllers/tweet.controller.js"
-
 // Middlewares
 import { upload } from '../middleware/multer.middleware.js'
 import { verifyJWT } from "../middleware/auth.middleware.js"
@@ -57,15 +49,6 @@ router.route("/cover-image").patch(verifyJWT, upload.single("coverImage"), updat
 router.route("/c/:username").get(verifyJWT, getUserChannelProfile)
 router.route("/history").get(verifyJWT, getWatchHistory)
 
-
-// Tweets Routes APIs
-router.route("/create-tweet").post(verifyJWT, createTweet)
-router.route("/t/:username").get(getUserTweets)  // recheck
-router.route("/update-tweet/:tweetId").patch(verifyJWT, updateTweet)
-router.route("/delete-tweet/:tweetId").delete(verifyJWT, deleteTweet)
-
-
-// Like Routes APIs
 
 
 

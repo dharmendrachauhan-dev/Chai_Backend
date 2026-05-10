@@ -224,7 +224,7 @@ const getVideoComment = asyncHandler(async (req, res) => {
             new ApiResponse(
                 200,
                 getComments,
-                "Video comment succefully fetched"
+                "Video comment successfully fetched"
             )
         )
 
