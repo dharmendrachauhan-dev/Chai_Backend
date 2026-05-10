@@ -234,7 +234,7 @@ export {
     addComment,
     updateComment,
     deleteComment,
-    getAllComment
+    getVideoComment
 }
 
 
