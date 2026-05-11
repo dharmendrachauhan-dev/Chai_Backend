@@ -3,7 +3,7 @@ import { Video } from '../models/video.model.js'
 import { User } from "../models/user.models.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
-import { uploadOnCloudinary } from "../utils/cloudinary.js"
+import { deleteFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 
 
@@ -160,8 +160,14 @@ const publicAVideos = asyncHandler(async (req, res)=> {
     const videoIsPublished = await Video.create({
         title: title,
         description: description,
-        videoFile: videoFile.url,
-        thumbnail: thumbnail.url,
+        videoFile: {
+            url: videoFile.url,
+            public_id: videoFile.public_id
+        },
+        thumbnail: {
+            url: thumbnail.url,
+            public_id: thumbnail.public_id
+        },
         duration: videoFile.duration,
         owner: req.user._id  //this is for db bzc db dont know how to who is uploading video so REQUIRE
     })
@@ -285,9 +291,88 @@ const getVideoById = asyncHandler(async (req, res) => {
 })
 
 const updateVideo = asyncHandler(async (req, res) => {
-    const { videoId } = req.params
+
     // TODO: update video details like title, description, thumbnail
-    
+    // get videoId from req.params ✅
+    // get title, description from req.body ✅
+    // get thumbnail by req.file single ✅
+
+    // valid videoId ✅
+    // validate title and description ✅
+
+    // find video in DB by videoId 
+    // check if video exists
+    // authorize => is logged in user the owner
+
+    // delete old thumbnail from cloudinary
+    // upload new thumbnail to cloudinary check if upload successful
+
+    // update video in DB
+    // => title
+    // => description
+    // => thumbnail (new cloudinary url)
+
+    // return response
+
+    const { videoId } = req.params
+    const { title, description } = req.body
+    const thumbnailLocalPath = req.file?.path // for file follow this
+
+    if(!mongoose.Types.ObjectId.isValid(videoId)){
+        throw new ApiError(400, "Invalid videoId")
+    }
+
+    if(!title?.trim() || !description?.trim()){
+        throw new ApiError(400, "Something went wrong all fields required")
+    }
+
+    if(!thumbnailLocalPath){
+        throw new ApiError(400, "Thumbnail is required")
+    }
+
+    const video = await Video.findById(videoId)
+    if(!video){
+        throw new ApiError(400, "video not found")
+    }
+
+    if(video.owner.toString() !== req.user._id.toString()){
+        throw new ApiError(403, "Unauthorized Action")
+    }
+
+    const oldThumbnailPublicId = video.thumbnail.public_id
+
+    await deleteFromCloudinary(oldThumbnailPublicId)
+
+    const newThumbnail = await uploadOnCloudinary(thumbnailLocalPath)
+    if(!newThumbnail.url){
+        throw new ApiError(400, "Error while uploading thumbnail")
+    }
+
+    const UpdatedVideo = await Video.findByIdAndUpdate(
+        {_id: videoId},
+        {
+            $set: {
+                title,
+                description,
+                thumbnail: {
+                    url: newThumbnail.url,
+                    public_id: newThumbnail.public_id
+                }
+            }
+        },
+        {new: true}
+    )
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            UpdatedVideo,
+            "All fields are updated"
+        )
+    )
+
 })
 
 const deleteVideo = asyncHandler(async (req, res) => {
