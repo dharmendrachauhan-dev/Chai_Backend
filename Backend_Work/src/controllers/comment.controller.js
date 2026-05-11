@@ -201,7 +201,7 @@ const getVideoComment = asyncHandler(async (req, res) => {
         },
         {
             $addFields: {
-                owner: {"$first": owner}  // array to object
+                owner: {$first: "$owner"}  // array to object
             }
         }
     ])
