@@ -108,10 +108,77 @@ const getAllVideos = asyncHandler(async (req, res) => {
 const publicAVideos = asyncHandler(async (req, res)=> {
     const { title, description } = req.body
     // TODO: get video, upload to cloudinary, create video
-    // step 1 => extract videoId from req.params so u can get video
-    // validate the videoId
-    // step 2 => 
+    // step 1 => check title and description ✅
+    // step 2 => take video from req.file?.path (multer) ✅
+    // step 3 => then check if req.file?.path have file or not ✅
+    // step 4 => take thumbnail from req.files ✅
+    //           check if thumbnail exists ✅
+    // step - 4.0 upload video to cloudinary 
+    //           check if upload succefull
+    // step-5 => upload thumbnail to cloudinary 
+    //           check if upload succefull
+    // step-6 => get video duration
+              // check if upload successful
+    // step-7 => get video duration 
+    //        // cloudinary gives duration after upload
+    // step-8 => create video in DB
+    //          title
+    //          description
+    //          videoFile
+    //          thumbnail
+    //          duration
+    //          owner
+    // step -9 => check if video created in DB
+    // step -10 => return response
+    
+    if((!title?.trim() || !description?.trim())){
+        throw new ApiError(400, "Both fields are required")
+    }
 
+    const videoLocalPath = req.files?.videoFile?.[0]?.path
+    if(!videoLocalPath){
+        throw new ApiError(400, "Video is not found")
+    }
+
+    const thumbnailLocalPath = req.files?.thumbnail?.[0]?.path
+    if(!thumbnailLocalPath){
+        throw new ApiError(400, "Thumbnail is not found")
+    }
+
+    const videoFile = await uploadOnCloudinary(videoLocalPath)
+    if(!videoFile.url){
+        throw new ApiError(400, "Error while uploading video")
+    }
+
+    const thumbnail = await uploadOnCloudinary(thumbnailLocalPath)
+    if(!thumbnail.url){
+        throw new ApiError(400, "Error while uploading thumbnail")
+    }
+
+    // you dont need to calculate duration of video cloudinary does this automatically
+
+    const videoIsPublished = await Video.create({
+        title: title,
+        description: description,
+        videoFile: videoFile.url,
+        thumbnail: thumbnail.url,
+        duration: videoFile.duration,
+        owner: req.user._id  //this is for db bzc db dont know how to who is uploading video so REQUIRE
+    })
+
+    if(!videoIsPublished){
+        throw new ApiError(400, "Something went wrong while publishing video")
+    }
+
+    return res
+    .status(201)
+    .json(
+        new ApiResponse(
+            200,
+            videoIsPublished,
+            "Video published successfully"
+        )
+    )
 })
 
 const getVideoById = asyncHandler(async (req, res) => {
