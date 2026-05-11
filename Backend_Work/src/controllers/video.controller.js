@@ -184,6 +184,104 @@ const publicAVideos = asyncHandler(async (req, res)=> {
 const getVideoById = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     // TODO: get video by id
+    // step-1 => validate videoId
+    // step-2 => build Aggreagte pipeline on video collection
+    // $match => find video where _id = videoId
+    // $lookup => get owner details from users
+    // project fullname, username, avatar
+    //$addFields => owner array to object ($first)
+    //$lookup => get likes count of this video 
+    // from likes collection where video = videoId
+    // $addFields => likesCount (how many likes)
+    // isLiked (did logged in user like this video?)
+    // step-3 => check if video found
+    // step-4 => increment views by 1
+    // user watched video = add 1 view
+    // step-5 => return response
+
+    if(!mongoose.Types.ObjectId.isValid(videoId)){
+        throw new ApiError(400, "Invalid VideoId")
+    }
+
+    const video = await Video.aggregate([
+        {
+            $match: new mongoose.Types.ObjectId(videoId)
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "owner",
+                pipeline: [
+                    {
+                        $project: {
+                            username: 1,
+                            avatar: 1,
+                            username: 1
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            $addFields:{
+                owner: {$first: "$owner"}
+            }
+        },
+        {
+            $lookup:{
+                from: "likes",
+                localField: "_id",
+                foreignField: "video",
+                as: "likes",
+                pipeline : [
+                    {
+                        $project:{
+                            likedBy: 1,
+                            video: 1
+                        }
+                    }
+                ]
+            }
+        },
+        { // addFields = add new calculated fields that don't exist in DB
+            $addFields: {
+                // count likes array => gives number
+                likesCount: { $size: "$likes" },
+
+                // check if user is in likes array
+                isLiked: {
+                    $cond: {
+                        if: {$in: [req.user?._id, "$likes.likedBy"]},
+                        then: true,
+                        else: false
+                    }
+                }
+            }
+        },
+
+    ])
+    
+    if(!video || getVideoById.length === 0){
+        throw new ApiError(400, "Video not found")
+    }
+
+    await Video.findByIdAndUpdate(
+        videoId,
+        { //adds 1 to whatever current value is eg 0=>1 , 100=>101, 200=>201 
+            $inc: {views: 1}
+        },
+        {new : true}
+    )
+
+    await User.findByIdAndUpdate(
+        req.user._id,
+        { // addToSet → adds only if not already in array
+            $addToSet: { watchHistory: videoId } // adds only if not already there
+        }
+    )
+
 })
 
 const updateVideo = asyncHandler(async (req, res) => {
