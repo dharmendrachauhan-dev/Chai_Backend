@@ -299,6 +299,7 @@ const updateVideo = asyncHandler(async (req, res) => {
 
     // valid videoId ✅
     // validate title and description ✅
+    // validate thumbnail
 
     // find video in DB by videoId 
     // check if video exists
@@ -376,8 +377,43 @@ const updateVideo = asyncHandler(async (req, res) => {
 })
 
 const deleteVideo = asyncHandler(async (req, res) => {
+    // TODO: delete video
+    // get videoId from req.params
+    // validate the videoId
+    // find in db by videoId
+    // check if found
+    // authorize it with verifyJWT
+    // search in db find by id and delete
+    // response
+
     const { videoId } = req.params
-    //TODO: delete video
+
+    if(!mongoose.Types.ObjectId.isValid(videoId)){
+        throw new ApiError(400, "Invalid videoId")
+    }
+
+    const video = await Video.findById(videoId)
+    if(!video){
+        throw new ApiError(400, "video not found")
+    }
+
+    if(video.owner.toString() !== req.user._id.toString()){
+        throw new ApiError(403, "Unauthorized action")  // if you try to access unauthorized thing then you show the error of 403
+    }
+
+    await deleteFromCloudinary(video.thumbnail.public_id) // delete thumbnail from cloudinary
+    await deleteFromCloudinary(video.videoFile.public_id) // delete videoFile from cloudinary
+    await Video.findByIdAndDelete(videoId)
+    
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            null,
+            "video removed successfully"
+        )
+    )
 })
 
 const togglePublishStatus = asyncHandler(async (req, res)=> {
