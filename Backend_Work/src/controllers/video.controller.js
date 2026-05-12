@@ -417,7 +417,49 @@ const deleteVideo = asyncHandler(async (req, res) => {
 })
 
 const togglePublishStatus = asyncHandler(async (req, res)=> {
+    // TODO
+    // get videoId ✅
+    // validate ✅
+    // find videoId in db ✅
+    // if not show error
+    // authorize the user
+    // flip isPublished value (makeit false) default is true in db
+    // save to db 
+    // return res
     const { videoId } = req.params
+
+    if(!mongoose.Types.ObjectId.isValid(videoId)){
+        throw new ApiError(400, "videoId invalid")
+    }
+
+    const video = await Video.findById(videoId)
+    if(!video){
+        throw new ApiError(400, "video not found")
+    }
+
+    if(video.owner.toString() !== req.user._id.toString()){
+        throw new ApiError(400, "Unauthorized action")
+    }
+
+    const toggleVideo = await Video.findByIdAndUpdate(
+        videoId,
+        {
+            $set: {
+                isPublished: !video.isPublished
+            }
+        },
+        {new : true}
+    )
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            toggleVideo,
+            "Publish status toggle successfully"
+        )
+    )
 })
 
 
