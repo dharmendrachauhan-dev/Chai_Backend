@@ -1,5 +1,6 @@
 import {Router} from "express"
-import { publicAVideos } from "../controllers/video.controller"
+import { getAllVideos, publicAVideos } from "../controllers/video.controller"
+import { verifyJWT } from "../middleware/auth.middleware"
 
 const router = Router()
 
@@ -16,3 +17,9 @@ router.route("/video").post(
     ]),
     publicAVideos
 )
+
+router.route("/").get(getAllVideos)
+router.route("/:videoId").get(verifyJWT , getVideoById)
+router.route("/:videoId").patch(verifyJWT, upload.single(thumbnail), updateVideo)
+router.route("/:videoId").delete(verifyJWT, deleteVideo)
+router.route("/:videoId").patch(verifyJWT. togglePublishStatus)

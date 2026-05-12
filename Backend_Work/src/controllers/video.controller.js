@@ -211,7 +211,7 @@ const getVideoById = asyncHandler(async (req, res) => {
 
     const video = await Video.aggregate([
         {
-            $match: new mongoose.Types.ObjectId(videoId)
+            $match: {_id: new mongoose.Types.ObjectId(videoId)}
         },
         {
             $lookup: {
@@ -259,7 +259,7 @@ const getVideoById = asyncHandler(async (req, res) => {
                 // check if user is in likes array
                 isLiked: {
                     $cond: {
-                        if: {$in: [req.user?._id, "$likes.likedBy"]},
+                        if: {$in: [new mongoose.Types.ObjectId(req.user?._id), "$likes.likedBy"]},
                         then: true,
                         else: false
                     }
@@ -269,7 +269,7 @@ const getVideoById = asyncHandler(async (req, res) => {
 
     ])
     
-    if(!video || getVideoById.length === 0){
+    if(!video || video.length === 0){
         throw new ApiError(400, "Video not found")
     }
 
@@ -286,6 +286,16 @@ const getVideoById = asyncHandler(async (req, res) => {
         { // addToSet → adds only if not already in array
             $addToSet: { watchHistory: videoId } // adds only if not already there
         }
+    )
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            video[0],
+            "Video fetched Succefully"
+        )
     )
 
 })
