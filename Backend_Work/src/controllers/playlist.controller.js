@@ -334,13 +334,64 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
 
 })
 
+const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
+    // validate both
+    // find playlist in db by playlist model
+    // check if exits
+    // find video from video model
+    // check if video exits
+    // user ko authorize karo
+    // use $pull findbyIdAndUpdate
+    const { playlistId, videoId } = req.params
 
+    if(!mongoose.Types.ObjectId.isValid(playlistId)){
+        throw new ApiError(400, "Invalid playlistId")
+    }
+
+    if(!mongoose.Types.ObjectId.isValid(videoId)){
+        throw new ApiError(400, "Invalid videoId")
+    }
+
+    const playlist = await Playlist.findById(playlistId)
+    if(!playlist){
+        throw new ApiError(400, "Playlist not found")
+    }
+
+    const video = await Video.findById(videoId)
+    if(!video){
+        throw new ApiError(400, "video not found")
+    }
+
+    if(playlist.owner.toString() !== req.user._id.toString()){
+        throw new ApiError(400, "Unauthorized action")
+    }
+
+    const updatedPlaylist = await Playlist.findByIdAndUpdate(
+        playlistId,
+        {
+            $pull: { videos: videoId }
+        },
+        {new: true}
+    )
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            updatedPlaylist,
+            "video succefully deleted"
+        )
+    )
+
+})
 
 export {
     createPlaylist,
     getUserPlaylists,
     getPlaylistById,
-    addVideoToPlaylist
+    addVideoToPlaylist,
+    removeVideoFromPlaylist
 }
 
 // NOTE For validation I have two ways to validate the req.params
