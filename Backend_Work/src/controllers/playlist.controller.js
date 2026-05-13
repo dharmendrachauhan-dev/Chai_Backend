@@ -266,9 +266,81 @@ const getPlaylistById = asyncHandler(async (req, res)=>{
     )
 })
 
+
+const addVideoToPlaylist = asyncHandler(async (req, res) => {
+
+    //todo
+    //validate playlistId and videoId using ..
+    //find playlist by playlistid
+    //check if playlist exits
+    //find the video by videoId
+    //check if video exists
+    //check ownership - req.user._id === playlist.owner
+    //check duplicate - video already in playlist.videos[]
+    //push videoId into playlist.videos[] using findByIdAndUpdate $push
+    //return respose
+    const {playlistId, videoId} = req.params
+    
+    if(!mongoose.Types.ObjectId.isValid(playlistId)){
+        throw new ApiError(400, "Invalid playlistId")
+    }
+
+    if(!mongoose.Types.ObjectId.isValid(videoId)){
+        throw new ApiError(400, "Invalid videoId")
+    }
+
+    const playlist = await Playlist.findOne({_id: playlistId})
+
+    if(!playlist){
+        throw new ApiError(400, "Playlist not found")
+    }
+
+    const video = await Video.findById(videoId)
+    if(!video){
+        throw new ApiError(400, "Video not found")
+    }
+
+    if(playlist.owner.toString() !== req.user._id.toString()){
+        throw new ApiError(400, "Unauthorized action")
+    }
+
+    // 1st Way manual duplicate check
+    // if(playlist.videos.some(id => id.toString() === videoId)){
+    //     throw new ApiError(400, "Video already in playlist")
+    // }
+
+    // await Playlist.findByIdAndUpdate(playlistId, {
+    //     $push: { videos: videoId }
+    // })
+
+    // 2nd Way todo same thing
+    const updatedPlaylist = await Playlist.findByIdAndUpdate(
+        playlistId, 
+        {
+            $addToSet: { videos: videoId } // this handles duplicate under the hood
+        },
+        {new: true}
+)
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            updatedPlaylist,
+            "video succefullly added in playlist"
+        )
+    )
+
+})
+
+
+
 export {
     createPlaylist,
-    getUserPlaylists
+    getUserPlaylists,
+    getPlaylistById,
+    addVideoToPlaylist
 }
 
 // NOTE For validation I have two ways to validate the req.params
