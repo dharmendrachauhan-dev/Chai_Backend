@@ -1,8 +1,9 @@
-import mongoose, { isValidObjectId } from "mongoose"
+import mongoose from "mongoose"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { Playlist } from "../models/playlist.model.js"
+import { jsx } from "react/jsx-runtime"
 
 const createPlaylist = asyncHandler(async (req, res) => {
     // TODO 
@@ -72,7 +73,7 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
     // return
 
     const { userId } = req.params
-    if (isValidObjectId(userId)) {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
         throw new ApiError(400, "Invalid userId")
     }
 
@@ -88,7 +89,7 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
                 localField: "owner",
                 foreignField: "_id",
                 as: "owner",
-                populate: [
+                pipeline: [
                     {
                         $project: {
                             fullName: 1,
@@ -105,7 +106,7 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
                 localField: "videos",
                 foreignField: "_id",
                 as: "videos",
-                populate: [
+                pipeline: [
                     {
                         $match: {
                             isPublished: true,
@@ -126,7 +127,7 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
         {
             $addFields: {
                 owner: {$first: "$owner"},
-                videos: {$size: "$videos"}
+                totalVideos: {$size: "$videos"}
             }
         },
         // sort
@@ -165,8 +166,114 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
     )
 })
 
+const getPlaylistById = asyncHandler(async (req, res)=>{
+    //todo: get playlist by id
+    //find playlist by id using aggregate pipeline
+    //stage 1: Match playlists by _id
+    //stage 2: Lookup videos from videos collection
+    // subpipeline: filter only isPublished: true videos
+    // subpipeline: project only needed video fields
+    //stage 3: Lookup owner details from users collection
+    // subpipeline: project only needed owner fields
+    // stage 4: $addFields- flatten owner array -> object, add totalVideos
+    // stage 5: $project - shape final output
+    //todo: check if playlists exits (array empty check)
+    // todo: return playlist
+
+    const {playlistId} = req.params
+    if(!mongoose.Types.ObjectId.isValid(playlistId)){
+        throw new ApiError(400, "Invalid playlist Id")
+    }
+
+    const playlist= await Playlist.aggregate([
+        {
+            $match: {
+                _id: new mongoose.Types.ObjectId(playlistId)
+            }
+        },
+        {
+            $lookup:{
+                from: "users",
+                localField: "owner",
+                foreignField: '_id',
+                as: "owner",
+                pipeline: [
+                    {
+                        $project: {
+                            username: 1,
+                            fullName: 1,
+                            avatar: 1
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            $lookup:{
+                from: "videos",
+                localField: "videos",
+                foreignField: "_id",
+                as: "videos",
+                pipeline: [
+                    {
+                        $match: {
+                            isPublished: true
+                        }
+                    },
+                    {
+                        $project:{
+                            views: 1,
+                            title: 1,
+                            description: 1,
+                            thumbnail: 1,
+                            duration: 1
+                        }
+                    },
+                ]
+            }
+        },
+        {
+            $addFields: {
+                owner: {$first : "$owner"},
+                totalVideos: {$size: "$videos"}
+            }
+        },
+        {
+            $project: {
+                name: 1,
+                description: 1,
+                owner: 1,
+                videos: 1,
+                totalVideos: 1,
+                createdAt: 1,
+                updatedAt: 1
+            }
+        }
+    ])
+
+    if(!playlist.length){
+        throw new ApiError(400, "Playlist not found")
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            playlist[0],
+            "Playlist succefully fetched"
+        )
+    )
+})
+
 export {
-    createPlaylist
+    createPlaylist,
+    getUserPlaylists
 }
+
+// NOTE For validation I have two ways to validate the req.params
+// first way=> mongoose.Types.ObjectId.isValid( playlistId )
+// secondWay=> import { isValidObjectId } from "mongoose"
+//             isValidObjectId( playlistId )
 
 
