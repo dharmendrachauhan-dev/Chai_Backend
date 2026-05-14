@@ -4,6 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../models/user.models.js"
+import { jsx } from "react/jsx-runtime";
 
 const toggleSubscription = asyncHandler(async (req, res) => {
     //todo
@@ -131,7 +132,74 @@ return res
 
 })
 
+const getSubscribedChannels = asyncHandler(async (req, res) => {
+    // todo
+    // validate the subscriberid
+    // find get user subscribed channel how channel that user subscribed
+    // by lookup
+    // project
+    // addfields
+    // project
+    // check user has subcribed any channel or not
+    // return response
+    const {subscriberId} = req.params
+
+    if(!mongoose.Types.ObjectId.isValid(subscriberId)){
+        throw new ApiError(400, "Invalid subscribedId")
+    }
+
+    const singleUserSubscribedChannel = await Subscription.aggregate([
+        {
+            $match: {subscriber: new mongoose.Types.ObjectId(subscriberId)}
+        },
+        {
+            $lookup:{
+                from: "users",
+                localField: "channel",
+                foreignField: "_id",
+                as: "channel",
+                pipeline: [
+                    {
+                        $project: {
+                            username: 1,
+                            avatar: 1,
+                            fullName: 1
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            $addFields: {
+               channel: {$first: "$channel"}
+            }
+        },
+        {
+            $project:{
+                channel: 1
+            }
+        }
+    ])
+
+    if(!singleUserSubscribedChannel.length){
+        throw new ApiError(400,[], "User has no subscribed channels")
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {
+                totalChannels: singleUserSubscribedChannel.length,
+                singleUserSubscribedChannel
+            }
+        )
+    )
+})
+
 export{
     toggleSubscription,
-    getUserChannelSubscribers
+    getUserChannelSubscribers,
+    getSubscribedChannels
 }
