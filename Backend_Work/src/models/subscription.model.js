@@ -13,6 +13,6 @@ const subscriptionSchema = new Schema({
 }, { timestamps: true }
 )
 
-export const subscription = model.mongoose("Subscription", subscriptionSchema) // Subscription convert into subscriptions
+export const Subscription = model.mongoose("Subscription", subscriptionSchema) // Subscription convert into subscriptions in mongodb
 
 // "Subscription" => The name → Mongoose will look for/create a collection called subscriptions (lowercase + plural)
