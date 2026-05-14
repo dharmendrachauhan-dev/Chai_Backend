@@ -4,7 +4,6 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../models/user.models.js"
-import { jsx } from "react/jsx-runtime";
 
 const toggleSubscription = asyncHandler(async (req, res) => {
     //todo
@@ -193,7 +192,8 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
             {
                 totalChannels: singleUserSubscribedChannel.length,
                 singleUserSubscribedChannel
-            }
+            },
+            "Subscribed channel succefully fetched"
         )
     )
 })

@@ -18,7 +18,7 @@ const createPlaylist = asyncHandler(async (req, res) => {
     const { name, description } = req.body
     const { videoId } = req.params
 
-    if (!name.trim() || !description.trim()) {
+    if (!name?.trim() || !description?.trim()) {
         throw new ApiError(400, "Both fields are required")
     }
 
@@ -489,6 +489,7 @@ export {
     getPlaylistById,
     addVideoToPlaylist,
     removeVideoFromPlaylist,
+    deletePlaylist,
     updatePlaylist
 }
 

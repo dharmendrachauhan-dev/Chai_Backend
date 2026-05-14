@@ -17,3 +17,6 @@ router.route("/toggle/v/:videoId").patch(verifyJWT, toggleVideoLike)
 router.route("/toggle/c/:commentId").patch(verifyJWT, toggleCommentLike)
 router.route("/toggle/c/:tweetId").patch(verifyJWT, toggleTweetLike)
 router.route("/videos").get(verifyJWT, getLikedVideos)
+
+
+export default router
