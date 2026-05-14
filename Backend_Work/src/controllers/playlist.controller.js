@@ -425,14 +425,71 @@ const deletePlaylist = asyncHandler(async (req, res) => {
     )
 })
 
-const 
+const updatePlaylist = asyncHandler(async (req, res) => {
+    //todo
+    //validate playlist id
+    // check name, descrption empty or not
+    // find by playlistId
+    // check 
+    // authorize karunga
+    // db mei find and update new set karunga 
+    // check
+    // return kar dunga
+
+
+    const { playlistId } = req.params
+    const { name, description } = req.body
+
+    if(!mongoose.Types.ObjectId.isValid(playlistId)){
+        throw new ApiError(400, "Invalid playlistId")
+    }
+
+    if(!name?.trim() || !description?.trim()){
+        throw new ApiError(400, "Both fields are required")
+    }
+
+    const playlist = await Playlist.findById(playlistId)
+    if(!playlist){
+        throw new ApiError(400, "Playlist not found")
+    }
+
+    if(playlist.owner.toString() !== req.user._id.toString()){
+        throw new ApiError(400, "Unauthorzed action")
+    }
+
+    const updatedPlaylist = await Playlist.findByIdAndUpdate(
+        playlistId,
+        {
+            $set: {
+                name: name.trim(),
+                description: description.trim()
+            }
+        },
+        {new : true}
+    )
+
+    if(!updatedPlaylist){
+        throw new ApiError(400, "something went while updating fields")
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            updatedPlaylist,
+            "Playlist successfully updated"
+        )
+    )
+})
 
 export {
     createPlaylist,
     getUserPlaylists,
     getPlaylistById,
     addVideoToPlaylist,
-    removeVideoFromPlaylist
+    removeVideoFromPlaylist,
+    updatePlaylist
 }
 
 // NOTE For validation I have two ways to validate the req.params
