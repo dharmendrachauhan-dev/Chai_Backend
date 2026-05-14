@@ -56,8 +56,82 @@ const toggleSubscription = asyncHandler(async (req, res) => {
 
 })
 
+const getUserChannelSubscribers = asyncHandler(async (req, res) => {
+    // todo
+    // Validate channelId using
+    // find all subscription where channel === channeId using aggregate pipeline
+    // stage1: $match: channel: ObjectId(channelId)
+    // stage2: $lookup: join users collection on subscriber field
+        //subpipeline: Project only needed fields (username, fullname)
+    // stage3: $addFields - flatten subscribers array
+    // stage4:$project - shape final output
+    // check if channel has any subsctibers (array empty check)
+    // return subscriber list with total cout
+    const {channelId} = req.params
 
+    if(!mongoose.Types.ObjectId.isValid(channelId)){
+        throw new ApiError(400, "Invalid channelId")
+    }
+
+    const channelSubscribers = await Subscription.aggregate([
+        {
+            $match: {
+                channel: new mongoose.Types.ObjectId(channelId)
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "subscriber",
+                foreignField: "_id",
+                as: "subscribed",
+                pipeline: [
+                    {
+                        $project: {
+                            username: 1,
+                            fullname: 1,
+                            avatar: 1,
+                        }
+                    }
+                ]
+                
+            }
+        },
+        {
+            $addFields: {
+                subscriber: {$first: "$subscribed"}
+            }
+        },
+        {
+            $project: {
+                fullname: 1,
+                avatar: 1,
+                username: 1,
+                subscribed:1,
+            }
+        }
+    ])
+
+if(!channelSubscribers.length){
+    throw new ApiError(400,[], "Channel has no subscribers")
+}
+
+return res
+.status(200)
+.json(
+    new ApiResponse(
+        200,
+        {
+            totalSubscribers: channelSubscribers.length,
+            channelSubscribers
+        },
+        "Subscribers fetched successfully"
+    )
+)
+
+})
 
 export{
-    toggleSubscription
+    toggleSubscription,
+    getUserChannelSubscribers
 }
