@@ -9,7 +9,7 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 
 
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
+ 
 
     //TODO: get all videos based on query, sort, pagination
     // step 1 => get all params from req.query
@@ -31,7 +31,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
     // step-5 check if videos found
     // step-6 return response
 
-    const {page, limit, query, sortBy, sortType, userId} = req.params
+   const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
 
     if(!mongoose.Types.ObjectId.isValid(userId)){
         throw new ApiError(400, "Invalid UserId")

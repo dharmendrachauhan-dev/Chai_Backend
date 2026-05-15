@@ -21,8 +21,10 @@ app.use(cookieParser()) //is is middleware that converts browser cookies into a 
 
 //routes import
 import userRouter from './routes/user.routes.js'
+import videoRouter from './routes/video.routes.js'
 
 // routes declaration
 app.use("/api/v1/users", userRouter) // Prefix
+app.use("/api/v1/videos", videoRouter)
 
 // EG: http://localhost:8000/api/v1/users/register
