@@ -32,6 +32,6 @@ router.route("/").get(getAllVideos)
 router.route("/:videoId").get(verifyJWT, getVideoById)
 router.route("/:videoId").patch(verifyJWT, upload.single("thumbnail"), updateVideo)
 router.route("/:videoId").delete(verifyJWT, deleteVideo)
-router.route("/:videoId").patch(verifyJWT, togglePublishStatus)
+router.route("/toggle/:videoId").patch(verifyJWT, togglePublishStatus)
 
 export default router

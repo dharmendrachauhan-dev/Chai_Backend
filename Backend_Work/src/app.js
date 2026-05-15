@@ -35,6 +35,6 @@ app.use("/api/v1/tweets", tweetRouter)
 app.use("/api/v1/likes", likeRouter)
 app.use("/api/v1/comments", commentRouter)
 app.use("/api/v1/playlists", playlistRouter)
-app.use("/api/v1/subscription", subscriptionRouter)
+app.use("/api/v1/subscriptions", subscriptionRouter)
 
 // EG: http://localhost:8000/api/v1/users/register

@@ -10,7 +10,6 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 
 const getAllVideos = asyncHandler(async (req, res) => {
  
-
     //TODO: get all videos based on query, sort, pagination
     // step 1 => get all params from req.query
     // page, limit, query, sortBy, sortType, userId
@@ -31,13 +30,13 @@ const getAllVideos = asyncHandler(async (req, res) => {
     // step-5 check if videos found
     // step-6 return response
 
-   const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
+   const { page = 1, limit = 10, query, sortBy = "createdAt", sortType = "desc", userId } = req.query
 
-    if(!mongoose.Types.ObjectId.isValid(userId)){
+    if(userId && !mongoose.Types.ObjectId.isValid(userId)){
         throw new ApiError(400, "Invalid UserId")
     }
 
-    const videosAggregate = await Video.aggregate([
+    const videosAggregate = Video.aggregate([
         {
             $match:{
                     isPublished: true, //... why bzc merging object into another object conditionally
@@ -56,8 +55,8 @@ const getAllVideos = asyncHandler(async (req, res) => {
         {
             $lookup: {
                 from: "users",
-                localField: "_id",
-                foreignField: "owner",
+                localField: "owner",
+                foreignField: "_id",
                 as: "owner",
                 pipeline: [
                     {
@@ -188,7 +187,6 @@ const publicAVideos = asyncHandler(async (req, res)=> {
 })
 
 const getVideoById = asyncHandler(async (req, res) => {
-    const { videoId } = req.params
     // TODO: get video by id
     // step-1 => validate videoId
     // step-2 => build Aggreagte pipeline on video collection
@@ -205,6 +203,8 @@ const getVideoById = asyncHandler(async (req, res) => {
     // user watched video = add 1 view
     // step-5 => return response
 
+    const { videoId } = req.params
+    
     if(!mongoose.Types.ObjectId.isValid(videoId)){
         throw new ApiError(400, "Invalid VideoId")
     }
