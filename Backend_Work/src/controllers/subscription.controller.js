@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { Subscription } from "../models/subscription.model.j";
+import { Subscription } from "../models/subscription.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";

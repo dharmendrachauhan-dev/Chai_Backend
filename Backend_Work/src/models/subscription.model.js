@@ -1,4 +1,4 @@
-import mongoose, { model, Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 
 const subscriptionSchema = new Schema({
@@ -13,6 +13,6 @@ const subscriptionSchema = new Schema({
 }, { timestamps: true }
 )
 
-export const Subscription = model.mongoose("Subscription", subscriptionSchema) // Subscription convert into subscriptions in mongodb
+export const Subscription = mongoose.model("Subscription", subscriptionSchema) // Subscription convert into subscriptions in mongodb
 
 // "Subscription" => The name → Mongoose will look for/create a collection called subscriptions (lowercase + plural)
