@@ -16,29 +16,32 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
     // return response with message //"Video Liked" or "Video Unliked"
 
     if (!mongoose.Types.ObjectId.isValid(videoId)) {
-        throw new ApiError(400, "VideoId not valid")
+        throw new ApiError(400, "Invalid VideoId")
     }
 
     const video = await Video.findById(videoId)
+    // console.log("Video Details => ", video)
     if (!video) {
         throw new ApiError(400, "Video not found")
     }
 
-    const existingLiked = await Like.findOne({
+    const existingLike = await Like.findOne({
         video: videoId,
         likedBy: req.user._id
     })
 
+    console.log("Existing Like => ",existingLike)
+
     if (existingLike) {
-        await Like.findByIdAndDelete(existingLiked._id)
+        await Like.findByIdAndDelete(existingLike._id)
         return res
             .status(200)
-            .json(200,
+            .json(
                 new ApiResponse
                     (
                         200,
-                        null,
-                        "Video unliked"
+                        existingLike,
+                        "Video like removed"
                     )
             )
     }
@@ -46,15 +49,14 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
     if (!existingLike) {
         await Like.create({
             video: videoId,
-            likeBy: req.user._id
+            likedBy: req.user._id
         })
         return res
             .status(200)
-            .ApiResponse(
-                200,
+            .json(
                 new ApiResponse(
                     200,
-                    null,
+                    existingLike,
                     "Video Liked"
                 )
             )
