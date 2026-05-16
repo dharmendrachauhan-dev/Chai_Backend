@@ -4,6 +4,8 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { Video } from '../models/video.model.js'
 import { Like } from "../models/like.model.js";
+import { Comment } from "../models/comment.model.js";
+import { Tweet } from "../models/tweet.model.js";
 
 
 const toggleVideoLike = asyncHandler(async (req, res) => {
@@ -29,8 +31,6 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
         video: videoId,
         likedBy: req.user._id
     })
-
-    console.log("Existing Like => ",existingLike)
 
     if (existingLike) {
         await Like.findByIdAndDelete(existingLike._id)
@@ -162,7 +162,7 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
     if (!existingLike) {
         await Like.create({
             tweet: tweetId,
-            likeedBy: req.user._id
+            likedBy: req.user._id
         })
         return res
             .status(200)
@@ -187,7 +187,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
         {
             $match: {
                 likedBy: new mongoose.Types.ObjectId(req.user._id),  // req.user._id = "user-1"(string) convert this into objectId for match
-                video: { $exits: true, $ne: null }
+                video: { $exists: true, $ne: null }
                 // $exits only checks the fields
                 // ne if video object nhi null hai then its fail
             }
