@@ -34,14 +34,14 @@ export const uploadOnCloudinary = async (localFilePath) => {
 
 export const deleteFromCloudinary = async (
     public_id,
-    resource_type = "image"
+    resource_type = "image" // default
 ) => {
     try {
         if (!public_id) return null
         const response = await cloudinary.uploader.destroy(
             public_id,
             {
-                resource_type
+                resource_type  // Auto not working so make a dynamically 
             }
     )
     console.log("Cloudinary delete Response => ", response)

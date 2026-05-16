@@ -32,11 +32,11 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
    const { page = 1, limit = 10, query, sortBy = "createdAt", sortType = "desc", userId } = req.query
 
-    if(userId && !mongoose.Types.ObjectId.isValid(userId)){
+    if(userId && !mongoose.Types.ObjectId.isValid(userId)){ // userId isliye lagaya taaki error bypass kar sake
         throw new ApiError(400, "Invalid UserId")
     }
 
-    const videosAggregate = Video.aggregate([
+    const videosAggregate = Video.aggregate([  // yha await ki jarurat nhi hai
         {
             $match:{
                     isPublished: true, //... why bzc merging object into another object conditionally
@@ -204,7 +204,7 @@ const getVideoById = asyncHandler(async (req, res) => {
     // step-5 => return response
 
     const { videoId } = req.params
-    
+
     if(!mongoose.Types.ObjectId.isValid(videoId)){
         throw new ApiError(400, "Invalid VideoId")
     }
@@ -410,10 +410,11 @@ const deleteVideo = asyncHandler(async (req, res) => {
     if(video.owner.toString() !== req.user._id.toString()){
         throw new ApiError(403, "Unauthorized action")  // if you try to access unauthorized thing then you show the error of 403
     }
-
+    
     await deleteFromCloudinary(video.thumbnail.public_id) // delete thumbnail from cloudinary
-    await deleteFromCloudinary(video.videoFile.public_id) // delete videoFile from cloudinary
+    await deleteFromCloudinary(video.videoFile.public_id, "video") // delete videoFile from cloudinary
     await Video.findByIdAndDelete(videoId)
+
     
     return res
     .status(200)
