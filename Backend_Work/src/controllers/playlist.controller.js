@@ -117,6 +117,7 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
                             title: 1, 
                             description: 1, 
                             thumbnail: 1,
+                            videoFile:1,
                             duration: 1, 
                             views: 1
                         }
@@ -152,7 +153,7 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
 
 
     if(!playlists.length){
-        throw new ApiError(400, "No playlists fetched successfully")
+        throw new ApiError(400, "No playlists exists")
     }
 
     return res
@@ -225,7 +226,6 @@ const getPlaylistById = asyncHandler(async (req, res)=>{
                             views: 1,
                             title: 1,
                             description: 1,
-                            thumbnail: 1,
                             duration: 1
                         }
                     },
