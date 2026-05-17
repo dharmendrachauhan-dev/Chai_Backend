@@ -142,6 +142,7 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
     // check user has subcribed any channel or not
     // return response
     const {subscriberId} = req.params
+    console.log("subscriberId => ", subscriberId)
 
     if(!mongoose.Types.ObjectId.isValid(subscriberId)){
         throw new ApiError(400, "Invalid subscribedId")
