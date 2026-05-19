@@ -36,9 +36,9 @@ function SearchBar() {
         {/* Search Button */}
         <button
           type="submit"
-          className="px-5 py-2.5 border-l border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+          className="px-5 py-2.5 cursor-pointer border-l border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
         >
-          <Search className="w-5 h-5" />
+          <Search className="w-5 h-5"/>
         </button>
       </div>
     </form>
