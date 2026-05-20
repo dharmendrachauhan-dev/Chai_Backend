@@ -55,7 +55,7 @@ function AuthButton() {
         </button>
       )}
       <Link 
-      to="/register"
+      to="/signup"
       className="hover:underline hover:text-blue-600 text-pink-500"
       >
         signup

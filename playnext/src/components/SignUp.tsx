@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-function Register() {
+function SignUp() {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -59,7 +59,7 @@ function Register() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-4 max-w-md mx-auto p-4"
+      className="flex flex-col m-15 gap-4 max-w-md mx-auto p-4 border-2 rounded-xl"
     >
       <input
         type="text"
@@ -67,7 +67,7 @@ function Register() {
         placeholder="Full Name"
         value={formData.fullName}
         onChange={handleChange}
-        className="border p-2 rounded"
+        className="border p-2 rounded focus:outline-none focus:ring-pink-600 focus:ring-2"
       />
 
       <input
@@ -76,7 +76,7 @@ function Register() {
         placeholder="Email"
         value={formData.email}
         onChange={handleChange}
-        className="border p-2 rounded"
+        className="border p-2 rounded focus:outline-none focus:ring-pink-600 focus:ring-2"
       />
 
       <input
@@ -85,7 +85,7 @@ function Register() {
         placeholder="Username"
         value={formData.username}
         onChange={handleChange}
-        className="border p-2 rounded"
+        className="border p-2 rounded focus:outline-none focus:ring-pink-600 focus:ring-2"
       />
 
       <input
@@ -94,35 +94,64 @@ function Register() {
         placeholder="Password"
         value={formData.password}
         onChange={handleChange}
-        className="border p-2 rounded"
+        className="border p-2 rounded focus:outline-none focus:ring-pink-600 focus:ring-2"
       />
 
       {/* Avatar */}
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) =>
-          setAvatar(e.target.files?.[0] || null)
-        }
-      />
+
+      <label className="w-full max-w-sm cursor-pointer">
+        <div className="border-2 border-dashed border-gray-300 rounded-2xl p-2 flex items-center justify-between flex-row gap-3 hover:border-pink-500 duration-300 ">
+          <p className="text-sm font-medium text-gray-700">
+            Upload Avatar Image
+          </p>
+          <span
+            className="px-4 py-2 bg-pink-400 text-white rounded-lg text-sm hover:opacity-90"
+          >
+            Choose File
+          </span>
+        </div>
+
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) =>
+            setAvatar(e.target.files?.[0] || null)
+          }
+          className="hidden"
+        />
+      </label>
 
       {/* Cover Image */}
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) =>
-          setCoverImage(e.target.files?.[0] || null)
-        }
-      />
+      <label className="w-full max-w-sm cursor-pointer">
+        <div className="border-2 border-dashed border-gray-300 rounded-2xl p-2 flex items-center justify-between flex-row gap-3 hover:border-pink-500 duration-300 ">
+          <p className="text-sm font-medium text-gray-700">
+            Upload Cover Image
+          </p>
+          <span
+            className="px-4 py-2 bg-pink-400 text-white rounded-lg text-sm hover:opacity-90"
+          >
+            Choose File
+          </span>
+        </div>
+
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) =>
+            setCoverImage(e.target.files?.[0] || null)
+          }
+          className="hidden"
+        />
+      </label>
 
       <button
         type="submit"
-        className="bg-black text-white py-2 rounded"
+        className="active:scale-98 transition-all bg-linear-to-br from-pink-500 to-red-500 tracking-wider font-bold  text-white py-2 rounded cursor-pointer "
       >
-        Register
+        Sign-Up
       </button>
     </form>
   );
 }
 
-export default Register;
+export default SignUp;
