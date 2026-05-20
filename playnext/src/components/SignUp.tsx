@@ -67,6 +67,7 @@ function SignUp() {
         placeholder="Full Name"
         value={formData.fullName}
         onChange={handleChange}
+        required
         className="border p-2 rounded focus:outline-none focus:ring-pink-600 focus:ring-2"
       />
 
@@ -76,6 +77,7 @@ function SignUp() {
         placeholder="Email"
         value={formData.email}
         onChange={handleChange}
+        required
         className="border p-2 rounded focus:outline-none focus:ring-pink-600 focus:ring-2"
       />
 
@@ -85,6 +87,7 @@ function SignUp() {
         placeholder="Username"
         value={formData.username}
         onChange={handleChange}
+        required
         className="border p-2 rounded focus:outline-none focus:ring-pink-600 focus:ring-2"
       />
 
@@ -94,6 +97,7 @@ function SignUp() {
         placeholder="Password"
         value={formData.password}
         onChange={handleChange}
+        required
         className="border p-2 rounded focus:outline-none focus:ring-pink-600 focus:ring-2"
       />
 
@@ -117,6 +121,7 @@ function SignUp() {
           onChange={(e) =>
             setAvatar(e.target.files?.[0] || null)
           }
+          required
           className="hidden"
         />
       </label>
