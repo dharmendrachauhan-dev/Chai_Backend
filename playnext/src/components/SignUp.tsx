@@ -10,6 +10,8 @@ function SignUp() {
 
   const [avatar, setAvatar] = useState<File | null>(null);
   const [coverImage, setCoverImage] = useState<File | null>(null);
+  const [message, setMessage] = useState('')
+  const [success, setSuccess] = useState(false)
 
 
   const avatarRef = useRef<HTMLInputElement | null>(null)
@@ -72,8 +74,18 @@ function SignUp() {
       if(coverImageRef.current){
         coverImageRef.current.value = "";
       }
+
+      if(response.ok){
+        setSuccess(true)
+        setMessage("SignUp successfully")
+      } else {
+        setSuccess(false)
+        setMessage(result.message || "Signup failed")
+      }
     } catch (error) {
       console.log(error);
+      setSuccess(false)
+      setMessage("Something went wrong");
     }
   };
 
@@ -171,6 +183,14 @@ function SignUp() {
           className="hidden"
         />
       </label>
+
+      {
+        message && (
+          <p className={`text-center font-medium text-xl ${success ? "text-green-600": "text-red-600"}`}>
+            {message}
+          </p>
+        )
+      }
 
       <button
         type="submit"
