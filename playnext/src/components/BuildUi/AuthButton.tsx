@@ -58,7 +58,13 @@ function AuthButton() {
       to="/signup"
       className="hover:underline hover:text-blue-600 text-pink-500"
       >
-        signup
+        SignUp
+      </Link>
+      <Link 
+      to="/signup"
+      className="hover:underline hover:text-blue-600 text-pink-500"
+      >
+        Login
       </Link>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 function SignUp() {
   const [formData, setFormData] = useState({
@@ -10,6 +10,11 @@ function SignUp() {
 
   const [avatar, setAvatar] = useState<File | null>(null);
   const [coverImage, setCoverImage] = useState<File | null>(null);
+
+
+  const avatarRef = useRef<HTMLInputElement | null>(null)
+  const coverImageRef = useRef<HTMLInputElement | null>(null)
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -50,7 +55,23 @@ function SignUp() {
       const result = await response.json();
 
       console.log(result);
+      setFormData({
+        fullName: "",
+        email: "",
+        username: "",
+        password: "",
+      })
 
+      setAvatar(null)
+      setCoverImage(null)
+
+      if(avatarRef.current) {
+        avatarRef.current.value = "";
+      }
+
+      if(coverImageRef.current){
+        coverImageRef.current.value = "";
+      }
     } catch (error) {
       console.log(error);
     }
@@ -118,6 +139,7 @@ function SignUp() {
         <input
           type="file"
           accept="image/*"
+          ref={avatarRef}
           onChange={(e) =>
             setAvatar(e.target.files?.[0] || null)
           }
@@ -142,6 +164,7 @@ function SignUp() {
         <input
           type="file"
           accept="image/*"
+          ref={coverImageRef}
           onChange={(e) =>
             setCoverImage(e.target.files?.[0] || null)
           }
@@ -151,9 +174,9 @@ function SignUp() {
 
       <button
         type="submit"
-        className="active:scale-98 transition-all bg-linear-to-br from-pink-500 to-red-500 tracking-wider font-bold  text-white py-2 rounded cursor-pointer "
+        className="active:scale-98 transition-all bg-linear-to-br from-pink-500 to-red-500 tracking-wider font-bold  text-white py-2 rounded cursor-pointer"
       >
-        Sign-Up
+        SignUp
       </button>
     </form>
   );
